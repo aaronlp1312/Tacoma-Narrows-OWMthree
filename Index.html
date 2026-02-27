@@ -1,0 +1,190 @@
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tacoma Narrows Weather</title>
+
+  <!-- Libraries / CDNs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css">
+
+  <!-- Your CSS file -->
+  <link rel="stylesheet" href="tacnarrowsstyle.css">
+</head>
+
+<body>
+    <!-- STAGE / SCENE -->
+    <section class="Narrows-Stage">
+
+  <!-- CANVAS LAYER STACK ─────────────────── -->
+  <div class="canvas-outer" id="canvas-stack">
+    <canvas id="bay-sky-canvas"    class="canvas"></canvas>
+    <canvas id="stars-canvas"      class="canvas"></canvas>
+    <canvas id="birds-canvas"      class="canvas"></canvas>
+    <canvas id="cloud-high-canvas" class="canvas"></canvas>
+    <canvas id="cloud-mid-canvas"  class="canvas"></canvas>
+    <canvas id="cloud-storm-canvas" class="canvas"></canvas>
+    <canvas id="fog-canvas"        class="canvas"></canvas>
+    <canvas id="mist-canvas"       class="canvas"></canvas>
+    <canvas id="rain-canvas"       class="canvas"></canvas>
+    <canvas id="snow-canvas"       class="canvas"></canvas>
+    <canvas id="hail-canvas"       class="canvas"></canvas>
+    <canvas id="lightning-canvas"  class="canvas"></canvas>
+  </div>
+
+  <!-- SUN / MOON ORBIT ───────────────────── -->
+  <div id="orbit" class="orbit">
+    <div class="sun" id="sun"></div>
+    <div class="moon" id="moon">
+      <div class="light-circle"></div>
+      <div class="shadow-circle"></div>
+      <div class="moon-texture"></div>
+    </div>
+  </div>
+
+  <!-- SCENE BLOCK ────────────────────────── -->
+  <div class="scene" id="scene">
+
+    <div class="farground"></div>
+
+    <div class="horizon"></div>
+
+    <canvas id="bridge-canvas" class="canvas"></canvas>
+
+    <div class="boat"></div>
+
+    <div class="foreground"></div>
+
+    <!-- MEMORIAL BIRDS ─────────────────── -->
+    <div id="memorial-birds-container" aria-hidden="true">
+      <div class="bird bird-a">
+        <div class="bird-inner">
+          <div class="wing left"></div>
+          <div class="body"></div>
+          <div class="wing right"></div>
+        </div>
+      </div>
+      <div class="bird bird-b">
+        <div class="bird-inner">
+          <div class="wing left"></div>
+          <div class="body"></div>
+          <div class="wing right"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TREES ──────────────────────────── -->
+    <div class="tree-container" id="tree-container">
+      <div class="tree" id="tree1"></div>
+      <div class="tree" id="tree2"></div>
+      <div class="tree" id="tree3"></div>
+    </div>
+
+  </div><!-- /scene -->
+
+  <!-- HUD OVERLAY ────────────────────────── -->
+  <div class="overlay">
+    <div class="details">
+      <div class="temp" id="temp">
+        <span id="format">72</span>
+        <p id="location-name">--</p>
+      </div>
+      <div class="right">
+        <span id="date"></span>
+        <div id="time">
+          <div class="clock">
+            <strong class="clock__word clock__word--bold"></strong>
+            <span class="clock__word"></span>
+            <strong class="clock__word clock__word--bold"></strong>
+            <strong class="clock__word clock__word--bold"></strong>
+          </div>
+          <div class="summary" id="description">Clear sky</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-container" id="searchContainer">
+      <div class="search-input-wrapper">
+        <input type="text" id="zipInput" class="search-box" placeholder="Search location...">
+        <button class="search-btn" id="searchBtn">
+          <span class="material-symbols-outlined">search</span>
+        </button>
+        <button class="search-clear" id="searchClear">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="control-buttons">
+        <button id="locationBtn"><span class="material-symbols-outlined">my_location</span></button>
+        <button id="refreshBtn"><span class="material-symbols-outlined">refresh</span></button>
+        <button id="unitToggle" style="font-weight:600;">°F/°C</button>
+      </div>
+    </div>
+  </div><!-- /overlay -->
+
+</section><!-- /Narrows-Stage -->
+
+
+<!-- ═══════════════════════════════════════════
+     APP CONTENT  (below the stage)
+═══════════════════════════════════════════ -->
+<div class="app-content">
+  <section class="panel" id="section-first">
+
+    <div class="welcome-day" id="date"></div>
+
+    <article class="tile tile--wide welcome-card">
+      <div id="user-name"></div>
+      <p id="welcome-message"></p>
+      <span id="theme-description"></span>
+      <p id="theme-quote"></p>
+    </article>
+
+    <div class="tile grid">
+      <article class="tile">
+        <p id="temp-high"></p>
+      </article>
+      <article class="tile">
+        <p id="temp-low"></p>
+      </article>
+    </div>
+
+    <article class="tile tile--wide stat-wide">
+      <p id="feels-like"></p>
+    </article>
+
+  </section>
+</div><!-- /app-content -->
+
+
+<!-- ═══════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════ -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+  import * as THREE_MODULE from 'three';
+  import { Water } from 'three/addons/objects/Water.js';
+
+  const THREE = { ...THREE_MODULE, Water };
+  window.THREE = THREE;
+
+  console.log('✅ Three.js r' + THREE_MODULE.REVISION + ' loaded with Water');
+</script>
+
+  <script src="tacnarrowsapp.js"></script>
+</body>
+</html>
