@@ -1,0 +1,1011 @@
+/* =========================
+   CSS CUSTOM PROPERTIES
+========================= */
+:root {
+  --background-gradient-1: #111;
+  --background-gradient-2: #222;
+  --background-gradient: linear-gradient(160deg, var(--background-gradient-1) 50%, var(--background-gradient-2) 100%);
+  --accent-color: #333;
+  --border-color: #444;
+  --surface: rgba(10,10,12,0.78);
+  --surface-2: rgba(18,19,20,0.86);
+  --text: rgba(247,247,247,0.95);
+  --text-overlay: rgba(18,17,16,0.95);
+  --text-muted: rgba(247,247,247,0.60);
+  --radius: 1.2rem;
+  --gutter: 1rem;
+  --offset: 2rem;
+  --shadow-soft: 0 2px 8px rgba(0,0,0,0.18);
+  --shadow-medium: 0 8px 24px rgba(0,0,0,0.28);
+  --shadow-hard: 0 14px 40px rgba(0,0,0,0.40);
+  --shadow: var(--shadow-medium);
+  --transition-fast: .15s ease;
+  --transition-normal: .3s ease;
+  --transition-slow: .6s ease;
+  --accent-muted: #666;
+  --accent-2: var(--accent-muted);
+  --scene-height: 100vh;
+  --scene-energy: 1;
+  --scene-dim: 0;
+  --scene-blur: 0px;
+  --camera-y: 0px;
+  --camera-zoom: 1;
+  --camera-tilt: 0deg;
+  --wind-dir: 1;
+  --wind-direction: normal;
+  --sway-duration: 4s;
+  --sway-left: -2deg;
+  --sway-right: 2deg;
+  --cloud-mask-stop: 50%;
+  --cloud-mask-end: 100%;
+  --wind-speed-1: 220s;
+  --wind-speed-2: 240s;
+  --wind-speed-3: 260s;
+  --wind-speed-high: 300s;
+  --wind-speed-overcast: 360s;
+  --cloud-1-opacity: 0;
+  --cloud-2-opacity: 0;
+  --cloud-3-opacity: 0;
+  --cloud-high-opacity: 0;
+  --cloud-overcast-opacity: 0;
+  --cloud-night-brightness: 1;
+  --cloud-night-contrast: 1;
+  --cloud-night-sat: 1;
+  --cloud-night-opacity-mult: 1;
+  --cloud-hue: 0deg;
+  --mountain-brightness: 1;
+  --mountain-contrast: 1;
+  --mountain-opacity: 1;
+  --shoreline-brightness: 1;
+  --shoreline-contrast: 1;
+  --shoreline-saturation: 1;
+  --shoreline-opacity: 1;
+  --foreground-brightness: 1;
+  --foreground-contrast: 1;
+  --foreground-saturation: 1;
+  --foreground-opacity: 1;
+  --tree-brightness: 1;
+  --tree-contrast: 1;
+  --tree-saturation: 1;
+  --tree-opacity: 1;
+  --sun-0: hsl(48 100% 55%);
+  --sun-1: hsl(39 100% 50%);
+  --sun-glow-0: hsl(45 100% 60% / .50);
+  --sun-glow-1: hsl(33 100% 55% / .30);
+  --sun-glow-2: hsl(25 100% 55% / .20);
+  --sun-intensity: .5;
+  --moon-glow: hsl(35 25% 72% / .60);
+  --meter-good: hsl(135 60% 40%);
+  --meter-warn: hsl(45 95% 55%);
+  --meter-bad: hsl(18 85% 55%);
+  --meter-cold: hsl(210 75% 55%);
+  --overlay: rgba(0,0,0,0);
+  --overlay-tint: rgba(0,0,0,0);
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  height: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background: var(--background-gradient);
+  background-size: 300% 300%;
+  animation: gradientShift 12s ease-in-out infinite;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  width: 100%;
+  text-align: center;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* =========================
+   NARROWS STAGE
+========================= */
+
+.Narrows-Stage {
+  position: sticky;
+  top: 0;
+  height: var(--scene-height);
+  overflow: hidden;
+  isolation: isolate;
+  z-index: 0;
+  background: transparent;
+  transform:
+    translateY(calc(var(--camera-y) * var(--scene-energy)))
+    scale(calc(1 - ((1 - var(--scene-energy)) * .06)))
+    rotateX(calc(var(--camera-tilt) * var(--scene-energy)));
+  filter:
+    brightness(calc(1 - ((1 - var(--scene-energy)) * .35)))
+    blur(calc((1 - var(--scene-energy)) * 6px));
+  transform-origin: center bottom;
+  transition: filter .2s linear, transform var(--transition-slow);
+}
+
+/* =========================
+   CANVAS LAYER STACK
+   Narrows-Stage isolation context — sequential, no shared values:
+     0  – bay-sky
+     1  – stars
+     2  – fog
+     3  – orbit
+     4  – mist
+     5  – scene (sub-context, see below)
+     6  – cloud-high
+     7  – cloud-mid
+     8  – cloud-storm
+     9  – rain
+    10  – snow
+    11  – hail
+    12  – lightning
+    13  – overlay HUD
+
+   scene sub-context:
+     1  – horizon
+     2  – farground
+     3  – bridge-canvas
+     4  – foreground
+     5  – boat
+     6  – memorial-birds-container
+     7  – tree-container
+========================= */
+
+.canvas-outer,
+.canvas-stack {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#bay-sky-canvas { z-index: 0; }
+
+#stars-canvas {
+  top: 0;
+  height: 55vh;
+  z-index: 1;
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  transition: opacity var(--transition-slow);
+}
+
+#fog-canvas {
+  bottom: 0;
+  height: 40vh;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 1s ease;
+  mix-blend-mode: soft-light;
+}
+
+#mist-canvas {
+  top: 0;
+  height: 50%;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 1s ease;
+  mix-blend-mode: screen;
+}
+
+canvas {
+  display:block;
+}
+
+#cloud-high-canvas,
+#cloud-mid-canvas,
+#cloud-storm-canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:55vh;
+
+  opacity:0;
+  overflow:hidden;
+
+  transform:translateZ(0);
+  backface-visibility:hidden;
+
+  transition:opacity 1.2s ease;
+
+  mask-image:linear-gradient(to bottom, black 50%, transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom, black 50%, transparent 100%);
+}
+#cloud-high-canvas  { z-index: 6; }
+#cloud-mid-canvas   { z-index: 7; }
+#cloud-storm-canvas { z-index: 8; }
+
+#rain-canvas,
+#snow-canvas,
+#hail-canvas,
+#lightning-canvas {
+  opacity: 0;
+  transition: opacity .5s ease;
+}
+
+#rain-canvas      { z-index: 9;  mix-blend-mode: screen; }
+#snow-canvas      { z-index: 10; }
+#hail-canvas      { z-index: 11; }
+#lightning-canvas { z-index: 12; mix-blend-mode: screen; }
+
+#rain-canvas.active,
+#snow-canvas.active,
+#hail-canvas.active,
+#lightning-canvas.active { opacity: 1; }
+
+/* =========================
+   SUN / MOON ORBIT
+========================= */
+
+.orbit {
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(315deg);
+  animation: linear sunrise infinite 43200s;
+  z-index: 3;
+}
+
+@keyframes sunrise {
+  from { transform: translate(-50%, -50%) rotate(315deg); }
+  to   { transform: translate(-50%, -50%) rotate(-45deg); }
+}
+
+.sun,
+.moon {
+  position: absolute;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1.5s ease;
+}
+
+.sun {
+  background: radial-gradient(circle, var(--sun-0), var(--sun-1));
+  box-shadow:
+    0 0 20px 10px var(--sun-glow-0),
+    0 0 60px 20px var(--sun-glow-1);
+}
+
+.moon {
+  transition: transform 0.5s ease-out, opacity 2s ease;
+  overflow: hidden;
+  background: rgba(140,140,140,0.95);
+  box-shadow:
+    0 0 30px 12px color-mix(in srgb, var(--moon-glow) 100%, transparent),
+    inset 0 0 15px rgba(255,255,255,0.3);
+}
+
+.moon.active {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+.moon-texture {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("https://raw.githubusercontent.com/aaronlp1312/Tacoma-Narrows-OWMthree/main/lunatic.png");
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: multiply;
+  z-index: 3;
+}
+
+.light-circle {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 70% 50%, rgba(255,255,255,0.95) 0%, rgba(220,220,220,0.7) 30%, rgba(180,180,180,0.3) 60%, transparent 100%);
+  border-radius: 50%;
+  z-index: 1;
+  transition: left 1.5s cubic-bezier(0.4,0,0.2,1);
+  filter: blur(0.5px);
+}
+
+.shadow-circle {
+  position: absolute;
+  top: 0;
+  right: -100%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 50%, rgba(0,0,0,0.9) 0%, rgba(40,40,40,0.6) 30%, rgba(80,80,80,0.2) 60%, transparent 100%);
+  border-radius: 50%;
+  z-index: 2;
+  transition: right 1.5s cubic-bezier(0.4,0,0.2,1);
+  filter: blur(0.5px);
+  mix-blend-mode: multiply;
+}
+
+#moonPrimary {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 24px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+  color: rgba(255,255,255,0.9);
+}
+
+#moonAlt {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 24px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+  color: rgba(0,0,0,0.7);
+}
+
+.moon-new     .light-circle  { left: -50%; }
+.moon-new     .shadow-circle { right: -50%; }
+.moon-waxing  .light-circle  { left:  calc((var(--moon-phase, 0.5) * 100% - 100%) * -1); }
+.moon-waxing  .shadow-circle { right: calc((1 - var(--moon-phase, 0.5)) * -100%); }
+.moon-full    .light-circle  { left: 0%; }
+.moon-full    .shadow-circle { right: -100%; }
+.moon-waning  .light-circle  { left:  calc((var(--moon-phase, 0.5) * 100% - 100%)); }
+.moon-waning  .shadow-circle { right: calc((var(--moon-phase, 0.5) * -100%)); }
+
+.sun.active,
+.moon.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* =========================
+   SCENE BLOCK
+========================= */
+
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+
+.horizon {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  height: 100%;
+  background: url("https://raw.githubusercontent.com/aaronlp1312/Tacoma-Narrows-OWMthree/main/thorizon.png") center / cover no-repeat;
+  z-index: 1;
+  filter: brightness(var(--shoreline-brightness)) contrast(var(--shoreline-contrast)) saturate(var(--shoreline-saturation));
+  opacity: calc(var(--shoreline-opacity) * var(--scene-energy));
+}
+
+.farground {
+  position: absolute;
+  bottom: 25px;
+  width: 100%;
+  height: 100%;
+  background: url("https://raw.githubusercontent.com/aaronlp1312/Tacoma-Narrows-OWMthree/main/tfarground.png") center right / cover no-repeat;
+  z-index: 2;
+  filter: brightness(var(--mountain-brightness)) contrast(var(--mountain-contrast));
+  opacity: calc(var(--mountain-opacity) * var(--scene-energy));
+}
+
+#bridge-canvas {
+  z-index: 3;
+  background: none;
+  contain: paint;
+  transform: translateZ(0);
+}
+
+.foreground {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: url("https://raw.githubusercontent.com/aaronlp1312/Tacoma-Narrows-OWMthree/main/tforeground.png") center bottom / cover no-repeat;
+  z-index: 4;
+  filter: brightness(var(--foreground-brightness)) contrast(var(--foreground-contrast)) saturate(var(--foreground-saturation));
+  opacity: calc(var(--foreground-opacity) * var(--scene-energy));
+}
+
+.boat {
+  position: absolute;
+  bottom: 240px;
+  left: 55px;
+  width: 22%;
+  height: 15%;
+  z-index: 5;
+  background: url("https://raw.githubusercontent.com/aaronlp1312/Tacoma-Narrows-OWMthree/main/boat.png") center left / contain no-repeat;
+  transform-origin: 30% 85%;
+  animation: boatDrift 16s ease-in-out infinite alternate;
+  opacity: var(--scene-energy);
+}
+
+@keyframes boatDrift {
+  0%   { transform: translate3d(0,0,0)       rotate(-.25deg); }
+  30%  { transform: translate3d(1px,-1px,0)  rotate(.15deg); }
+  65%  { transform: translate3d(0,-2px,0)    rotate(.4deg); }
+  100% { transform: translate3d(-1px,-1px,0) rotate(-.2deg); }
+}
+
+/* =========================
+   TREE CONTAINER
+========================= */
+
+.tree-container {
+  position: absolute;
+  bottom: 280px;
+  right: -25px;
+  height: 205px;
+  width: 100px;
+  z-index: 7;
+  transform-origin: bottom center;
+  filter: brightness(var(--tree-brightness)) contrast(var(--tree-contrast)) saturate(var(--tree-saturation));
+  opacity: calc(var(--tree-opacity) * var(--scene-energy));
+}
+
+#tree1,
+#tree2,
+#tree3 {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom;
+  transform-origin: bottom center;
+  animation-duration: calc(var(--sway-duration) / max(.2, var(--scene-energy)));
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+#tree1 {
+  background-image: url("https://raw.githubusercontent.com/aaronlp1312/Tacoma-Narrows-OWMthree/main/1769709637124.png");
+  animation-name: treeSway1;
+}
+
+#tree2 {
+  background-image: url("https://raw.githubusercontent.com/aaronlp1312/Tacoma-Narrows-OWMthree/main/1769709810962.png");
+  animation-name: treeSway2;
+  animation-delay: -.5s;
+}
+
+#tree3 {
+  background-image: url("https://raw.githubusercontent.com/aaronlp1312/Tacoma-Narrows-OWMthree/main/1769709810962.png");
+  animation-name: treeSway3;
+  animation-delay: -1.2s;
+}
+
+@keyframes treeSway1 {
+  0%,100% { transform: rotate(0); }
+  25%     { transform: rotate(calc(var(--sway-left) * var(--scene-energy))); }
+  75%     { transform: rotate(calc(var(--sway-right) * var(--scene-energy))); }
+}
+
+@keyframes treeSway2 {
+  0%,100% { transform: rotate(0); }
+  25%     { transform: rotate(calc(var(--sway-left) * .7 * var(--scene-energy))); }
+  75%     { transform: rotate(calc(var(--sway-right) * .7 * var(--scene-energy))); }
+}
+
+@keyframes treeSway3 {
+  0%,100% { transform: rotate(0); }
+  25%     { transform: rotate(calc(var(--sway-left) * .5 * var(--scene-energy))); }
+  75%     { transform: rotate(calc(var(--sway-right) * .5 * var(--scene-energy))); }
+}
+
+/* =========================
+   MEMORIAL BIRDS
+========================= */
+
+#memorial-birds-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 8vh;
+  height: 44vh;
+  pointer-events: none;
+  z-index: 6;
+  overflow: hidden;
+  perspective: 900px;
+  perspective-origin: 50% 50%;
+  opacity: var(--scene-energy);
+}
+
+#memorial-birds-container .bird {
+  position: absolute;
+  width: 120px;
+  height: 80px;
+  top: 0;
+  left: 0;
+  will-change: transform, opacity;
+  opacity: 0;
+}
+
+#memorial-birds-container .bird-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-origin: center;
+  will-change: transform;
+}
+
+#memorial-birds-container .body {
+  position: absolute;
+  inset: 0;
+  background-image: url("https://assets.codepen.io/13168878/body.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  z-index: 2;
+  animation: bird-body-bob 1.4s ease-in-out infinite;
+}
+
+#memorial-birds-container .wing {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  z-index: 1;
+}
+
+#memorial-birds-container .wing.left {
+  background-image: url("https://assets.codepen.io/13168878/leftwing.png");
+  transform-origin: 55% 55%;
+  animation: wing-left 820ms ease-in-out infinite;
+}
+
+#memorial-birds-container .wing.right {
+  background-image: url("https://assets.codepen.io/13168878/rightwing.png");
+  transform-origin: 45% 55%;
+  animation: wing-right 820ms ease-in-out infinite;
+}
+
+#memorial-birds-container .bird-a {
+  animation: fly-a 34s linear infinite;
+}
+
+#memorial-birds-container .bird-b {
+  animation: fly-b 36s linear infinite;
+  animation-delay: -3.5s;
+}
+
+#memorial-birds-container .bird-b .bird-inner {
+  opacity: .92;
+}
+
+#memorial-birds-container .bird-a .bird-inner {
+  animation: bank-a 34s linear infinite;
+}
+
+#memorial-birds-container .bird-b .bird-inner {
+  animation: bank-b 36s linear infinite;
+  animation-delay: -3.5s;
+}
+
+@keyframes wing-left {
+  0%   { transform: rotate(0deg)   scaleY(1); }
+  30%  { transform: rotate(-24deg) scaleY(.80); }
+  55%  { transform: rotate(-30deg) scaleY(.72); }
+  80%  { transform: rotate(-10deg) scaleY(.92); }
+  100% { transform: rotate(0deg)   scaleY(1); }
+}
+
+@keyframes wing-right {
+  0%   { transform: rotate(0deg)  scaleY(1); }
+  30%  { transform: rotate(24deg) scaleY(.80); }
+  55%  { transform: rotate(30deg) scaleY(.72); }
+  80%  { transform: rotate(10deg) scaleY(.92); }
+  100% { transform: rotate(0deg)  scaleY(1); }
+}
+
+@keyframes bird-body-bob {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-2px); }
+}
+
+@keyframes fly-a {
+  0% {
+    animation-timing-function: cubic-bezier(.42,0,.58,1);
+    opacity: 0;
+    z-index: 1;
+    transform: translate(-18vw, 18vh) rotateZ(-8deg) scale(0.97);
+  }
+  5% {
+    animation-timing-function: ease-in-out;
+    opacity: 0;
+    transform: translate(-8vw, 16vh) rotateZ(-8deg) scale(0.98);
+  }
+  8% {
+    animation-timing-function: cubic-bezier(.25,.1,.25,1);
+    opacity: 0.95;
+    transform: translate(0vw, 14vh) rotateZ(-5deg) scale(0.99);
+  }
+  18% {
+    animation-timing-function: ease-in-out;
+    transform: translate(12vw, 11vh) rotateZ(4deg) scale(1.00);
+  }
+  26% {
+    animation-timing-function: cubic-bezier(.42,0,.58,1);
+    transform: translate(22vw, 9vh) rotateZ(12deg) scale(1.01);
+    z-index: 1;
+  }
+  36% {
+    animation-timing-function: ease-in-out;
+    transform: translate(38vw, 11vh) rotateZ(0deg) scale(1.02);
+  }
+  42% {
+    animation-timing-function: cubic-bezier(.42,0,.58,1);
+    transform: translate(50vw, 14vh) rotateZ(-12deg) scale(1.03);
+  }
+  50% {
+    animation-timing-function: ease-in-out;
+    z-index: 3;
+    transform: translate(66vw, 12vh) rotateZ(-6deg) scale(1.03);
+  }
+  58% {
+    animation-timing-function: cubic-bezier(.25,.8,.25,1);
+    transform: translate(80vw, 13vh) rotateZ(2deg) scale(1.02);
+  }
+  68% {
+    animation-timing-function: ease-in-out;
+    transform: translate(94vw, 15vh) rotateZ(10deg) scale(1.01);
+    opacity: 0.9;
+  }
+  80% {
+    animation-timing-function: linear;
+    transform: translate(110vw, 17vh) rotateZ(8deg) scale(1.00);
+    opacity: 0.6;
+    z-index: 1;
+  }
+  92% {
+    opacity: 0.2;
+    transform: translate(120vw, 18vh) rotateZ(4deg) scale(0.99);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(126vw, 18vh) rotateZ(2deg) scale(0.98);
+    z-index: 1;
+  }
+}
+
+@keyframes fly-b {
+  0% {
+    animation-timing-function: ease-in-out;
+    opacity: 0;
+    z-index: 1;
+    transform: translate(-22vw, 26vh) rotateZ(-6deg) scale(0.91);
+  }
+  6% {
+    animation-timing-function: cubic-bezier(.42,0,.58,1);
+    opacity: 0;
+    transform: translate(-10vw, 24vh) rotateZ(-6deg) scale(0.92);
+  }
+  10% {
+    animation-timing-function: ease-in-out;
+    opacity: 0.9;
+    transform: translate(0vw, 22vh) rotateZ(-3deg) scale(0.93);
+  }
+  20% {
+    animation-timing-function: cubic-bezier(.25,.1,.25,1);
+    transform: translate(10vw, 19vh) rotateZ(4deg) scale(0.94);
+  }
+  28% {
+    animation-timing-function: ease-in-out;
+    transform: translate(20vw, 17vh) rotateZ(10deg) scale(0.95);
+  }
+  38% {
+    animation-timing-function: cubic-bezier(.42,0,.58,1);
+    transform: translate(38vw, 19vh) rotateZ(0deg) scale(0.96);
+  }
+  46% {
+    animation-timing-function: ease-in-out;
+    transform: translate(54vw, 22vh) rotateZ(-10deg) scale(0.97);
+  }
+  54% {
+    animation-timing-function: cubic-bezier(.25,.8,.25,1);
+    z-index: 2;
+    transform: translate(68vw, 21vh) rotateZ(-2deg) scale(0.97);
+  }
+  62% {
+    animation-timing-function: ease-in-out;
+    transform: translate(82vw, 20vh) rotateZ(8deg) scale(0.96);
+  }
+  72% {
+    animation-timing-function: linear;
+    transform: translate(96vw, 23vh) rotateZ(6deg) scale(0.95);
+    opacity: 0.8;
+    z-index: 1;
+  }
+  85% {
+    animation-timing-function: ease-in;
+    transform: translate(112vw, 25vh) rotateZ(4deg) scale(0.93);
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(128vw, 26vh) rotateZ(2deg) scale(0.91);
+    z-index: 1;
+  }
+}
+
+@keyframes bank-a {
+  0%   { transform: rotateY(-14deg); }
+  5%   { transform: rotateY(-14deg); }
+  8%   { transform: rotateY(-8deg);  }
+  18%  { transform: rotateY(6deg);   }
+  26%  { transform: rotateY(20deg);  }
+  36%  { transform: rotateY(0deg);   }
+  42%  { transform: rotateY(-20deg); }
+  50%  { transform: rotateY(-10deg); }
+  58%  { transform: rotateY(3deg);   }
+  68%  { transform: rotateY(16deg);  }
+  80%  { transform: rotateY(13deg);  }
+  92%  { transform: rotateY(6deg);   }
+  100% { transform: rotateY(3deg);   }
+}
+
+@keyframes bank-b {
+  0%   { transform: translate(-3vw, 2vh) scale(0.88) rotateY(-10deg); }
+  6%   { transform: translate(-3vw, 2vh) scale(0.88) rotateY(-10deg); }
+  10%  { transform: translate(-3vw, 2vh) scale(0.88) rotateY(-5deg);  }
+  20%  { transform: translate(-3vw, 2vh) scale(0.88) rotateY(6deg);   }
+  28%  { transform: translate(-3vw, 2vh) scale(0.88) rotateY(16deg);  }
+  38%  { transform: translate(-3vw, 2vh) scale(0.88) rotateY(0deg);   }
+  46%  { transform: translate(-3vw, 2vh) scale(0.88) rotateY(-17deg); }
+  54%  { transform: translate(-3vw, 2vh) scale(0.88) rotateY(-3deg);  }
+  62%  { transform: translate(-3vw, 2vh) scale(0.88) rotateY(13deg);  }
+  72%  { transform: translate(-3vw, 2vh) scale(0.88) rotateY(10deg);  }
+  85%  { transform: translate(-3vw, 2vh) scale(0.88) rotateY(6deg);   }
+  100% { transform: translate(-3vw, 2vh) scale(0.88) rotateY(3deg);   }
+}
+
+/* =========================
+   TYPOGRAPHY
+========================= */
+
+#theme-quote {
+  font-size: .5rem;
+  text-align: center;
+  color: var(--text-muted, #fafafa);
+}
+
+#theme-description {
+  font-size: .6rem;
+  text-align: center;
+  color: var(--text-muted, #cacaca);
+}
+
+.h2 {
+  font-size: 20px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 0 3rem -1rem rgba(0,0,0,.5);
+  transition: transform .1s ease-in-out, box-shadow .1s;
+}
+
+.span {
+  font-family: "Montserrat", sans-serif;
+  font-size: 17px;
+  font-weight: 200;
+  color: #cacaca;
+}
+
+.p {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 200;
+  color: rgba(255,255,255,.5);
+}
+
+/* =========================
+   HUD OVERLAY
+========================= */
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 13;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  color: var(--text);
+  opacity: var(--scene-energy);
+}
+
+.overlay .details {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  mix-blend-mode: color-burn;
+  text-shadow:
+    0 0 16px rgba(255,255,255,0.7),
+    0 1px 2px rgba(0,0,0,0.4);
+  color: var(--text-overlay);
+  font-family: "DM Sans", sans-serif;
+  transition: color 2s ease;
+}
+
+.overlay .details .temp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+justify-content: center;
+  font-family: "DM Sans", sans-serif;
+}
+
+.overlay .details .temp::after { content: none; }
+
+#format {
+  font-family: "DM Sans", sans-serif;
+  font-size: 3.4em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+#location-name {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.78em;
+  font-weight: 200;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+  max-width: 9ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+.overlay .details .right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 0;
+  font-family: "DM Sans", sans-serif;
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+#date {
+  display: block;
+  font-weight: 200;
+  opacity: 1;
+  margin: 0;
+}
+
+ .clock {
+  margin: 0;
+  text-align: right;
+  justify-content: flex-end;
+  font-family: "DM Sans", sans-serif;
+  font-size: 1em;
+color: var(--text);
+}
+
+.clock__word {
+  display: inline-block;
+  font-weight: 200;
+}
+
+.clock__word:empty { display: none; }
+
+.clock__word--bold { font-weight: 600; }
+
+.clock__word--fade-fly-in {
+  animation: fade-fly-in 0.6s cubic-bezier(0.65,0,0.35,1);
+}
+
+@keyframes fade-fly-in {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.overlay .details .summary,
+#description {
+  font-family: "DM Sans", sans-serif;
+  font-size: 1em;
+  font-weight: 200;
+  opacity: 1;
+  margin: 0;
+}
+
+
+
+
+/* =========================
+   SEARCH UI
+========================= */
+
+.search-container {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 6px;
+  backdrop-filter: blur(8px);
+}
+
+.search-box {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 14px;
+  padding: 6px 10px;
+  width: 160px;
+}
+
+.search-btn,
+.search-clear,
+.control-buttons button {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  justify-content: center;
+}
