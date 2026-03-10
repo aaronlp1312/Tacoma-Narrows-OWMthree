@@ -1,47 +1,52 @@
- 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tacoma Narrows Weather</title>
-
-  <!-- Libraries / CDNs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Narrows Weather</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&family=Bangers&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css">
-
-  <!-- Your CSS file -->
-  <link rel="stylesheet" href="tacnarrowsstyle.css">
+<link rel="stylesheet"herf=""></style>
 </head>
-
 <body>
-    <!-- STAGE / SCENE -->
-    <section class="Narrows-Stage">
 
-  <!-- CANVAS LAYER STACK ─────────────────── -->
+<!-- ===============================================
+     NARROWS STAGE
+=============================================== -->
+<section class="Narrows-Stage">
+
   <div class="canvas-outer" id="canvas-stack">
-    <canvas id="bay-sky-canvas"    class="canvas"></canvas>
-    <canvas id="stars-canvas"      class="canvas"></canvas>
-    <canvas id="birds-canvas"      class="canvas"></canvas>
-    <canvas id="cloud-high-canvas" class="canvas"></canvas>
-    <canvas id="cloud-mid-canvas"  class="canvas"></canvas>
+    <canvas id="bay-sky-canvas"     class="canvas"></canvas>
+    <canvas id="stars-canvas"       class="canvas"></canvas>
+    <canvas id="birds-canvas"       class="canvas"></canvas>
+    <canvas id="cloud-high-canvas"  class="canvas"></canvas>
+    <canvas id="cloud-mid-canvas"   class="canvas"></canvas>
     <canvas id="cloud-storm-canvas" class="canvas"></canvas>
-    <canvas id="fog-canvas"        class="canvas"></canvas>
-    <canvas id="mist-canvas"       class="canvas"></canvas>
-    <canvas id="rain-canvas"       class="canvas"></canvas>
-    <canvas id="snow-canvas"       class="canvas"></canvas>
-    <canvas id="hail-canvas"       class="canvas"></canvas>
-    <canvas id="lightning-canvas"  class="canvas"></canvas>
+    <canvas id="fog-canvas"         class="canvas"></canvas>
+    <canvas id="mist-canvas"        class="canvas"></canvas>
+    <canvas id="rain-canvas"        class="canvas"></canvas>
+    <canvas id="snow-canvas"        class="canvas"></canvas>
+    <canvas id="hail-canvas"        class="canvas"></canvas>
+    <canvas id="lightning-canvas"   class="canvas"></canvas>
   </div>
 
-  <!-- SUN / MOON ORBIT ───────────────────── -->
   <div id="orbit" class="orbit">
-    <div class="sun" id="sun"></div>
+    <div class="sun" id="sun">
+      <div class="sun-core"></div>
+      <div class="sunray-group cw">
+        <div class="ray ray1"></div><div class="ray ray2"></div>
+        <div class="ray ray3"></div><div class="ray ray4"></div>
+        <div class="ray ray5"></div>
+      </div>
+      <div class="sunray-group ccw">
+        <div class="ray ray1"></div><div class="ray ray2"></div>
+        <div class="ray ray3"></div><div class="ray ray4"></div>
+        <div class="ray ray5"></div>
+      </div>
+    </div>
     <div class="moon" id="moon">
       <div class="light-circle"></div>
       <div class="shadow-circle"></div>
@@ -49,20 +54,14 @@
     </div>
   </div>
 
-  <!-- SCENE BLOCK ────────────────────────── -->
   <div class="scene" id="scene">
-
-    <div class="farground"></div>
-
+    <div class="mountain"></div>
     <div class="horizon"></div>
-
+    <div class="farground"></div>
     <canvas id="bridge-canvas" class="canvas"></canvas>
-
     <div class="boat"></div>
-
     <div class="foreground"></div>
 
-    <!-- MEMORIAL BIRDS ─────────────────── -->
     <div id="memorial-birds-container" aria-hidden="true">
       <div class="bird bird-a">
         <div class="bird-inner">
@@ -80,20 +79,17 @@
       </div>
     </div>
 
-    <!-- TREES ──────────────────────────── -->
     <div class="tree-container" id="tree-container">
       <div class="tree" id="tree1"></div>
       <div class="tree" id="tree2"></div>
       <div class="tree" id="tree3"></div>
     </div>
-
   </div><!-- /scene -->
 
-  <!-- HUD OVERLAY ────────────────────────── -->
   <div class="overlay">
     <div class="details">
-      <div class="temp" id="temp">
-        <span id="format">72</span>
+      <span class="temp" id="temp">
+        <p id="format"></p>
         <p id="location-name">--</p>
       </div>
       <div class="right">
@@ -123,7 +119,7 @@
       <div class="control-buttons">
         <button id="locationBtn"><span class="material-symbols-outlined">my_location</span></button>
         <button id="refreshBtn"><span class="material-symbols-outlined">refresh</span></button>
-        <button id="unitToggle" style="font-weight:600;">°F/°C</button>
+        <button id="unitToggle" style="font-weight:600;">F/C</button>
       </div>
     </div>
   </div><!-- /overlay -->
@@ -131,41 +127,290 @@
 </section><!-- /Narrows-Stage -->
 
 
-<!-- ═══════════════════════════════════════════
-     APP CONTENT  (below the stage)
-═══════════════════════════════════════════ -->
+<!-- ===============================================
+     APP CONTENT
+=============================================== -->
 <div class="app-content">
-  <section class="panel" id="section-first">
 
-    <div class="welcome-day" id="date"></div>
+  <article>
+    <h2>welcome</h2>
+    <div id="user-name"></div>
+    <p id="welcome-message"></p>
+    <span id="theme-description"></span>
+    <p id="theme-quote"></p>
+  </article>
 
-    <article class="tile tile--wide welcome-card">
-      <div id="user-name"></div>
-      <p id="welcome-message"></p>
-      <span id="theme-description"></span>
-      <p id="theme-quote"></p>
-    </article>
-
-    <div class="tile grid">
-      <article class="tile">
-        <p id="temp-high"></p>
-      </article>
-      <article class="tile">
-        <p id="temp-low"></p>
-      </article>
+  <article>
+    <div class="tile-grid">
+      <div class="tile">
+        <span class="tile-title">Today's High</span>
+        <div class="tile-img"><i class="wi wi-thermometer"></i></div>
+        <div class="tile-data"><p id="temp-high">--</p></div>
+      </div>
+      <div class="tile">
+        <span class="tile-title">Today's Low</span>
+        <div class="tile-img"><i class="wi wi-thermometer-exterior"></i></div>
+        <div class="tile-data"><p id="temp-low">--</p></div>
+      </div>
     </div>
+  </article>
 
-    <article class="tile tile--wide stat-wide">
-      <p id="feels-like"></p>
-    </article>
+  <article>
+    <h2>Feels like</h2>
+    <span>In your area</span>
+    <p id="feels-like"></p>
+  </article>
 
-  </section>
+  <article id="alerts-container">
+    <div id="local-alerts" style="display:none;">
+      <h2>Local Alerts</h2>
+    </div>
+    <div id="national-alerts" style="display:none;">
+      <h2 id="severe-weather">Severe Weather</h2>
+    </div>
+    <div id="no-alerts">
+      <h2>Drive Safely</h2>
+      <figure>
+        <blockquote>
+          <p><strong>Diamond in the back, sun roof top digging in the scene with a gangsta lean.</strong></p>
+        </blockquote>
+        <figcaption><cite>beep beep</cite></figcaption>
+      </figure>
+    </div>
+  </article>
+
+  <article style="aspect-ratio: 5/3">
+    <h2>Night Duration and Lunar data</h2>
+    <span>Moon Phase</span>
+    <p id="moonPhaseName">--</p>
+    <span>Moonrise</span>
+    <p id="moonrise">--</p>
+    <span>Moonset</span>
+    <p id="moonset">--</p>
+    <span>Nighttime Duration</span>
+    <p id="nightLength">--</p>
+  </article>
+
+  <div class="article-alt">
+    <div id="moonPhase">
+      <i id="moonPrimary" class="wi wi-moon"></i>
+      <i id="moonAlt" class="wi wi-moon-alt"></i>
+    </div>
+  </div>
+
+  <article style="aspect-ratio: 5/3">
+    <h2>Day Duration And Solar data</h2>
+    <span>Season of:</span>
+    <p id="season"></p>
+    <span>Sunrise:</span>
+    <p id="sunrise">--</p>
+    <span>Sunset:</span>
+    <p id="sunset">--</p>
+    <span>Daylight Duration:</span>
+    <p id="dayLength">--</p>
+  </article>
+
+  <article>
+    <h2>24-Hour Celestial Path</h2>
+    <div class="helix-wrap">
+      <canvas id="helixCanvas" width="800" height="200"></canvas>
+      <div id="solar" class="label solar" style="opacity:0;"></div>
+      <div id="luna"  class="label lunar" style="opacity:0;"></div>
+    </div>
+    <div id="tickLabels" class="tick-labels"></div>
+  </article>
+
+  <article class="x">
+    <h2>Hourly Forecast</h2>
+    <div class="hourly-grid" id="hourly-forecast"></div>
+  </article>
+
+  <article class="alt">
+    <h2>7-Day Forecast</h2>
+    <ul class="forecast-list" id="daily-forecast"></ul>
+  </article>
+
+  <article class="alt">
+    <h2>Conditions</h2>
+    <div class="tile-grid">
+
+      <div class="tile">
+        <span class="tile-title">Wind Speed</span>
+        <div class="tile-img"><i class="wi wi-strong-wind"></i></div>
+        <div class="tile-data"><p id="windSpeed">--</p></div>
+      </div>
+
+      <div class="tile">
+        <span class="tile-title">Wind Gusts</span>
+        <div class="tile-img"><i class="wi wi-windy"></i></div>
+        <div class="tile-data"><p id="windGust">--</p></div>
+      </div>
+
+      <div class="tile">
+        <span class="tile-title">Wind Direction</span>
+        <div class="tile-img"><i class="wi wi-wind-direction-up"></i></div>
+        <div class="tile-data">
+          <p id="windDirection">--</p>
+          <p id="windCompass">--</p>
+        </div>
+      </div>
+
+      <div class="tile">
+        <span class="tile-title">Cloud Cover</span>
+        <div class="tile-img"><i class="wi wi-cloud"></i></div>
+        <div class="tile-data"><p id="clouds">--</p></div>
+      </div>
+
+      <div class="tile">
+        <span class="tile-title">Dew Point</span>
+        <div class="tile-img"><i class="wi wi-raindrop"></i></div>
+        <div class="tile-data"><p id="dewPoint">--</p></div>
+      </div>
+
+      <div class="tile">
+        <span class="tile-title">Rain Chance</span>
+        <div class="tile-img"><i class="wi wi-rain"></i></div>
+        <div class="tile-data"><p id="rainChance">--</p></div>
+      </div>
+
+      <div class="tile">
+        <span class="tile-title">Humidity</span>
+        <div class="tile-img"><i class="wi wi-humidity"></i></div>
+        <div class="tile-data"><p id="humidity">--</p></div>
+      </div>
+
+      <div class="tile">
+        <span class="tile-title">Pressure</span>
+        <div class="tile-img"><i class="wi wi-barometer"></i></div>
+        <div class="tile-data"><p id="pressure">--</p></div>
+      </div>
+
+    </div>
+  </article>
+
 </div><!-- /app-content -->
 
 
-<!-- ═══════════════════════════════════════════
-     SCRIPTS
-═══════════════════════════════════════════ -->
+<script>
+/* -- CelestialHelix -- markers sit inside .helix-wrap (canvas-local coords) -- */
+(function(){
+  class CelestialHelix {
+    constructor(opts={}) {
+      this.canvas   = document.getElementById(opts.canvasId||'helixCanvas');
+      this.solarEl  = document.getElementById(opts.solarId ||'solar');
+      this.lunarEl  = document.getElementById(opts.lunarId ||'luna');
+      this.labelsEl = document.getElementById(opts.labelsId||'tickLabels');
+      this.wrap     = this.canvas ? this.canvas.parentElement : null;
+      if (!this.canvas||!this.solarEl||!this.lunarEl) {
+        console.warn('[Helix] missing #helixCanvas / #solar / #luna'); return;
+      }
+      this.ctx = this.canvas.getContext('2d');
+      this.dpr = Math.max(1, window.devicePixelRatio||1);
+      this._resizeCanvas();
+      this._drawPath();
+      this._labels();
+      this._hookResize();
+      this.update(this._guessSunTimes());
+      this._timer = setInterval(()=>this.update(this.lastTimes||this._guessSunTimes()), 60000);
+    }
+    destroy(){ window.removeEventListener('resize',this._onResize); clearInterval(this._timer); }
+
+    updateFromWeather(w){
+      if(!w?.current?.sunrise||!w?.current?.sunset) return;
+      this.update({ sunrise: new Date(w.current.sunrise*1000), sunset: new Date(w.current.sunset*1000) });
+    }
+
+    update({ sunrise, sunset }){
+      this.lastTimes = { sunrise, sunset };
+      const now = new Date(), isDay = now>sunrise && now<sunset;
+      const pos = this._posOnCanvas(this._dayProgress(now));
+      const active = isDay ? this.solarEl : this.lunarEl;
+      const hidden = isDay ? this.lunarEl  : this.solarEl;
+      active.style.left    = pos.x + 'px';
+      active.style.top     = pos.y + 'px';
+      active.style.opacity = '1';
+      hidden.style.opacity = '0';
+    }
+
+    _resizeCanvas(){
+      const cw = this.canvas.offsetWidth||800, ch = this.canvas.offsetHeight||200;
+      this.canvas.width  = Math.round(cw * this.dpr);
+      this.canvas.height = Math.round(ch * this.dpr);
+      this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+    }
+
+    _drawPath(){
+      const w = this.canvas.offsetWidth||800, h = this.canvas.offsetHeight||200;
+      const amp = h*0.28, mid = h/2;
+      this.ctx.clearRect(0,0,w,h);
+      this.ctx.save();
+      this.ctx.strokeStyle='rgba(255,255,255,0.08)';
+      this.ctx.lineWidth=1;
+      this.ctx.setLineDash([]);
+      this.ctx.beginPath(); this.ctx.moveTo(0,mid); this.ctx.lineTo(w,mid); this.ctx.stroke();
+      this.ctx.strokeStyle='rgba(255,255,255,0.28)';
+      this.ctx.lineWidth=1.5;
+      this.ctx.setLineDash([5,5]);
+      this.ctx.beginPath();
+      for(let x=0;x<=w;x++){
+        const y = mid - Math.sin((x/w)*Math.PI*4)*amp;
+        x===0 ? this.ctx.moveTo(x,y) : this.ctx.lineTo(x,y);
+      }
+      this.ctx.stroke();
+      this.ctx.strokeStyle='rgba(255,255,255,0.15)';
+      this.ctx.lineWidth=1;
+      this.ctx.setLineDash([]);
+      [0.25,0.5,0.75].forEach(t=>{
+        const x = t*w;
+        this.ctx.beginPath(); this.ctx.moveTo(x,mid-8); this.ctx.lineTo(x,mid+8); this.ctx.stroke();
+      });
+      this.ctx.restore();
+    }
+
+    _labels(){
+      if(!this.labelsEl) return;
+      this.labelsEl.innerHTML='';
+      ['12 AM','6 AM','12 PM','6 PM','12 AM'].forEach(t=>{
+        const el=document.createElement('div'); el.textContent=t; this.labelsEl.appendChild(el);
+      });
+    }
+
+    _dayProgress(date){
+      const s=new Date(date); s.setHours(0,0,0,0);
+      return ((date-s)/86400000)%1;
+    }
+
+    _posOnCanvas(progress){
+      const w=this.canvas.offsetWidth||800, h=this.canvas.offsetHeight||200;
+      const amp=h*0.28, mid=h/2;
+      return { x: progress*w, y: mid - Math.sin(progress*Math.PI*4)*amp };
+    }
+
+    _onResize=()=>{
+      this._resizeCanvas(); this._drawPath();
+      if(this.lastTimes) this.update(this.lastTimes);
+    };
+    _hookResize(){ window.addEventListener('resize',this._onResize,{passive:true}); }
+
+    _guessSunTimes(){
+      const b=new Date(), sr=new Date(b), ss=new Date(b);
+      sr.setHours(6,0,0,0); ss.setHours(18,0,0,0);
+      return { sunrise:sr, sunset:ss };
+    }
+  }
+
+  window.Helix={
+    instance:null,
+    ensure(){ if(!this.instance) this.instance=new CelestialHelix(); return this.instance; },
+    updateFromWeather(d){ this.ensure().updateFromWeather(d); }
+  };
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    if(document.getElementById('helixCanvas')) window.Helix.ensure();
+  });
+})();
+</script>
+
 <script type="importmap">
 {
   "imports": {
@@ -178,13 +423,12 @@
 <script type="module">
   import * as THREE_MODULE from 'three';
   import { Water } from 'three/addons/objects/Water.js';
-
   const THREE = { ...THREE_MODULE, Water };
   window.THREE = THREE;
-
-  console.log('✅ Three.js r' + THREE_MODULE.REVISION + ' loaded with Water');
+  console.log('Three.js r' + THREE_MODULE.REVISION + ' loaded with Water');
 </script>
 
-  <script src="tacnarrowsapp.js"></script>
+<script sr="app.js"</script>
+
 </body>
 </html>
